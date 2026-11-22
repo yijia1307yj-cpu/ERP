@@ -23,7 +23,7 @@
 | 表格 | TanStack Table v8（虚拟滚动） | — | — |
 | 图表 | ECharts 5 | — | 不要 Chart.js/Recharts |
 | 数据库 | PostgreSQL | 16.x | 不要 MySQL/SQLite（本地也不许） |
-| ORM | Prisma（CRUD）+ Kysely（复杂查询） | — | 不要 TypeORM/Sequelize |
+| ORM | **Kysely** + `node-pg-migrate`（纯 SQL 迁移） | — | 不要 TypeORM/Sequelize；**不用 Prisma Migrate** |
 | 队列 | Redis 7 + BullMQ | — | 不要 Kafka/RabbitMQ |
 | 包管理 | pnpm workspace | 9.x | 不要 npm/yarn |
 | 图标 | `@ant-design/icons` | — | 不要引入其他图标库 |
@@ -79,7 +79,7 @@ pnpm dev:web       # 启动前端
 4. **不得提交**：`.env`、真实买家数据、平台密钥、`node_modules`、构建产物。
 5. **不得跨模块改文件**：一次 PR 只碰一个模块目录（跨模块改动要拆分）。
 6. **不得"顺手重构"**：重构单独 PR，不和功能混在一起。
-7. **不得手改生成代码**：OpenAPI 客户端、Prisma Client 由命令生成。
+7. **不得手改生成代码**：OpenAPI 客户端、kysely-codegen 生成的类型由命令生成。
 
 ## 6. 领域约定
 
@@ -87,7 +87,7 @@ pnpm dev:web       # 启动前端
 |---|---|
 | 金额 | 整数最小单位 + 币种，禁止浮点；跨币种用有理数汇率 |
 | 时间 | 存 UTC（`timestamptz`），展示按店铺时区 |
-| 租户 | 每个查询必须带 `tenant_id`；仓储层强制注入 |
+| 租户 | 租户即组织：每个查询必须带 `org_id`；仓储层强制注入 |
 | 错误 | 业务失败返回 `Result`，程序错误才 throw；错误码见 `contracts/errors.ts` |
 | 库存 | 只追加流水；余额是投影；预占独立表 |
 | 幂等 | 所有外部写操作带 `idempotency_key` |

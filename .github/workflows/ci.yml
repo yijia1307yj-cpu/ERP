@@ -69,5 +69,9 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4   # 版本取自 package.json 的 packageManager
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: Dependency audit
-        run: npm audit --audit-level=high || true
+        run: pnpm audit --audit-level high
