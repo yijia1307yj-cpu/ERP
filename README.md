@@ -1,61 +1,52 @@
-# GitHub 仓库骨架
+# ERP
 
-把本目录下的文件**复制到代码仓库根目录**，即可获得一套开箱可用的协作基础设施。
+跨境电商 ERP：Shopee 台湾 / TikTok 泰马 / Coupang 台湾 / momo 四个平台，模块化单体 + 独立 Worker。
 
-```
-.
-├─ .github/
-│  ├─ workflows/
-│  │  ├─ ci.yml                 # PR 门禁：typecheck / lint / test / 迁移 dry-run / build
-│  │  └─ deploy.yml             # 手动触发 → 构建镜像 → 部署（production 需审批）
-│  ├─ CODEOWNERS                # 自动指定 review 人
-│  ├─ pull_request_template.md  # PR 自检清单
-│  ├─ dependabot.yml            # 依赖每周检查
-│  └─ ISSUE_TEMPLATE/
-│     ├─ bug.yml
-│     └─ feature.yml
-├─ .gitignore
-└─ .gitattributes
-```
+> 开发约束（技术栈、目录、硬性规则、完成定义）全部在 **[AGENTS.md](./AGENTS.md)**，写代码前先读。
 
-## 使用前要改的三处
+## 环境要求
 
-1. **`CODEOWNERS`**：把 `@your-org/erp-core` 等换成你的真实组织/团队，否则 GitHub 会忽略这些规则。
-2. **`ci.yml`**：`pnpm` 版本、Node 版本、脚本名（`typecheck` / `lint` / `test` / `db:migrate:check`）要和你 `package.json` 对齐；没有的脚本先删掉对应 step。
-3. **`deploy.yml`**：Secrets 需要在仓库里配置：
-
-| Secret | 用途 |
+| 工具 | 版本 |
 |---|---|
-| `ACR_REGISTRY` | 阿里云容器镜像服务地址 |
-| `ACR_USERNAME` / `ACR_PASSWORD` | 镜像仓库账号 |
-| `DEPLOY_HOST` / `DEPLOY_USER` / `DEPLOY_SSH_KEY` | 目标服务器与部署密钥 |
+| Node.js | 22.x（仓库根有 `.node-version`，fnm / nvm 可自动切换） |
+| pnpm | 9.x（由 `package.json` 的 `packageManager` 锁定，`corepack enable` 即可） |
+| Docker | 本地 PostgreSQL 16 + Redis 7 |
 
-## 仓库设置清单（建仓后 10 分钟内做完）
-
-- [ ] 私有仓库 + 组织级强制 2FA
-- [ ] `main` 分支保护：PR + 1 approval + status check `ci/verify` + linear history + 禁止 force push
-- [ ] 合并方式只保留 **Squash merge**
-- [ ] 新建 `staging` / `production` 两个 Environment，`production` 配审批人
-- [ ] 开启 Secret scanning 与 push protection
-- [ ] Actions 权限设为「只读默认 + 按需提升」
-
-## 本地初始化
+## 快速开始
 
 ```bash
-git init -b main
-cp -r github-starter/.github .
-cp github-starter/.gitignore github-starter/.gitattributes .
-git add .
-git commit -m "chore: 初始化仓库骨架"
-git remote add origin git@github.com:<org>/erp.git
-git push -u origin main
+cp .env.example .env        # 按需修改；.env 不进 git
+docker compose up -d        # 启动 postgres / redis（带 healthcheck）
+pnpm install
+pnpm db:migrate             # 执行数据库迁移
+pnpm dev:api                # http://127.0.0.1:3000/health
+pnpm dev:web                # http://127.0.0.1:5173
 ```
 
-## 约定
+## 常用命令
 
-- 分支：`feat/*`、`fix/*`、`chore/*`、`hotfix/*`，生命周期 ≤ 3 天
+| 命令 | 作用 |
+|---|---|
+| `pnpm typecheck` | 全部包类型检查 |
+| `pnpm lint` | ESLint |
+| `pnpm test` | Vitest（根级单次运行） |
+| `pnpm build` | 全部包构建 |
+| `pnpm db:migrate` / `db:migrate:down` | 执行 / 回滚迁移（作用于 `DATABASE_URL`） |
+| `pnpm db:migrate:check` | 在临时库上验证迁移可 up/down，不碰主库 |
+
+## 目录
+
+```
+apps/api        NestJS HTTP 入口
+apps/web        React 管理台（Vite + Ant Design）
+packages/*      contracts / domain / application / infrastructure / connectors
+db/migrations   SQL 迁移（只增不改）
+.github/        CI、PR 模板、Issue 模板、CODEOWNERS、Dependabot
+```
+
+## 协作约定
+
+- 分支：`feat/*`、`fix/*`、`chore/*`、`hotfix/*`
 - 提交：Conventional Commits（`feat(scope): ...`）
-- PR：≤ 400 行，关联 Issue，CI 绿才可合
-- 发布：打 tag → GitHub Release → 镜像 tag 与 git tag 一致
-
-详细规则见 `14-GitHub版本管理与协作规范.md`。
+- PR：一个任务一个 PR，≤ 400 行，填完 PR 模板，CI（`verify`）绿才可合
+- `main` 受保护：必须走 PR，至少 1 个 approve，必须通过 `verify`
