@@ -1,0 +1,18 @@
+# 代码所有者：PR 会自动请求这些人 review
+# 语法：路径  @用户或@团队
+
+*                       @your-org/erp-core
+
+# 平台连接器：必须懂平台协议的人 review
+/packages/connectors/   @your-org/erp-integrations
+
+# 数据模型与迁移：改动必须 DBA/架构 review
+/db/migrations/         @your-org/erp-core
+/packages/domain/       @your-org/erp-core
+
+# 部署与基础设施
+/.github/workflows/     @your-org/erp-ops
+/infra/                 @your-org/erp-ops
+
+# 文档可以宽松一些
+/docs/                  @your-org/erp-product

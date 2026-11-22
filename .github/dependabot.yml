@@ -1,0 +1,31 @@
+version: 2
+
+updates:
+  # 依赖每周检查一次，周一早上提 PR
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 5
+    groups:
+      # 开发依赖合并成一个 PR，减少噪音
+      dev-dependencies:
+        dependency-type: development
+      # 框架类大版本单独看
+      framework:
+        patterns:
+          - react
+          - '@nestjs/*'
+          - vite
+    ignore:
+      # 平台 SDK 不自动升级，必须人工验证
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

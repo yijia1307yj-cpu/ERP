@@ -1,0 +1,42 @@
+name: 缺陷报告
+description: 记录一个可复现的问题
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: 现象
+      description: 发生了什么？期望是什么？
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. 进入订单列表
+        2. 筛选「待打单」
+        3. 点击「打印面单」
+    validations:
+      required: true
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: 影响范围
+      options:
+        - 单个租户/店铺
+        - 多个租户
+        - 全站不可用
+        - 不影响业务（体验问题）
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 环境与线索
+      description: 订单号、店铺 ID、trace_id、截图（注意脱敏）
+    validations:
+      required: false
